@@ -17,15 +17,19 @@ jobs:
       - name: Baixar dependências
         run: flutter pub get
 
-      - name: Ajustar versão mínima do iOS para 15.5
+      - name: Gerar arquivos iOS e definir versão mínima 15.5
         run: |
+          flutter precache --ios
           cd ios
+          if [ ! -f Podfile ]; then
+            pod init
+          fi
           if grep -q "platform :ios" Podfile; then
-            sed -i '' "s/^#\s*platform :ios.*/platform :ios, '15.5'/g" Podfile
-            sed -i '' "s/^platform :ios.*/platform :ios, '15.5'/g" Podfile
+            sed -i '' "s/.*platform :ios.*/platform :ios, '15.5'/g" Podfile
           else
             sed -i '' "1s/^/platform :ios, '15.5'\n/" Podfile
           fi
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.5;/g' Runner.xcodeproj/project.pbxproj
 
       - name: Compilar app iOS sem assinatura
         run: flutter build ios --release --no-codesign
