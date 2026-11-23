@@ -1,0 +1,33 @@
+name: Build iOS IPA (Sem Assinatura)
+
+on:
+  workflow_dispatch: # Permite rodar manualmente pelo botão no GitHub
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Baixar dependências
+        run: flutter pub get
+
+      - name: Compilar app iOS sem assinatura
+        run: flutter build ios --release --no-codesign
+
+      - name: Empacotar em .ipa
+        run: |
+          mkdir -p Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r app-sem-assinatura.ipa Payload
+
+      - name: Disponibilizar .ipa para download
+        uses: actions/upload-artifact@v4
+        with:
+          name: meu-app-ios
+          path: app-sem-assinatura.ipa
