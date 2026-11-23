@@ -1,7 +1,7 @@
 name: Build iOS IPA (Sem Assinatura)
 
 on:
-  workflow_dispatch: # Permite rodar manualmente pelo botão no GitHub
+  workflow_dispatch:
 
 jobs:
   build:
@@ -16,6 +16,16 @@ jobs:
 
       - name: Baixar dependências
         run: flutter pub get
+
+      - name: Ajustar versão mínima do iOS para 15.5
+        run: |
+          cd ios
+          if grep -q "platform :ios" Podfile; then
+            sed -i '' "s/^#\s*platform :ios.*/platform :ios, '15.5'/g" Podfile
+            sed -i '' "s/^platform :ios.*/platform :ios, '15.5'/g" Podfile
+          else
+            sed -i '' "1s/^/platform :ios, '15.5'\n/" Podfile
+          fi
 
       - name: Compilar app iOS sem assinatura
         run: flutter build ios --release --no-codesign
